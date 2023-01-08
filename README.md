@@ -52,6 +52,7 @@ Script Maker은 누구나 Minecraft 상에서 GUI를 쉽게 구현할 수 있게
 ## Technical Information(기술적인 기본 정보)
 
 ### [Script Maker Mod 제작 방법](https://github.com/dayo05/Script-Maker/blob/master/modding.md)
+* [예시](https://github.com/dayo05/ScriptMakerCoreBlocks)
 ### Namespace별 간략 설명
 * ScriptMaker => Base Namespace
 * ScriptMaker.Entry => 블럭, 화살표 등 구성품

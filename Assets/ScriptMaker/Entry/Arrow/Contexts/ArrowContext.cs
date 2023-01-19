@@ -2,18 +2,22 @@ using ScriptMaker.Program.Data;
 
 namespace ScriptMaker.Entry.Arrow.Contexts
 {
-    public class ArrowContext: BaseArrowContext
+    public class ArrowContext
     {
-        public string Key = "0default";
+        public long From;
+        public long To;
 
-        public override Option Serialize() => base.Serialize()
-            .Append("Key", Key);
+        public Option Serialize() => new Option("Context", this.GetType().Name)
+            .Append("From", From)
+            .Append("To", To);
 
-        public override BaseArrowContext ReadOption(Option opt)
+        public ArrowContext ReadOption(Option opt)
         {
-            base.ReadOption(opt);
-            Key = opt["Key"].String();
+            From = opt["From"].Long();
+            To = opt["To"].Long();
             return this;
         }
+
+        public string DisplayName(long NS) => $"{NS}번 화살표 선택됨";
     }
 }

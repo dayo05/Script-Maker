@@ -13,6 +13,43 @@ namespace ScriptMaker.Program.UI
         public virtual void OnClose()
         {
         }
+
+        protected void AddDefaultUI()
+        {
+            CreateObject(out var background, "Background");
+            background.AssignRectTransform();
+            background.SetObjectSize(1280, 720);
+            background.SetObjectDefaultPos();
+            var bgi = background.AddComponent<Image>();
+            bgi.color = Color.gray;
+
+            CreateButton(out var closeButton, "CloseButton", () =>
+            {
+                if (IsFront)
+                    UIManager.CloseGui();
+            });
+            closeButton.SetObjectSize(75, 75);
+            closeButton.SetObjectPos(-550, 275);
+            closeButton.transform.rotation = Quaternion.Euler(new Vector3(0, 0, 45));
+            closeButton.ButtonTransaction(button =>
+            {
+                button.transition = Selectable.Transition.SpriteSwap;
+                var sprite = button.spriteState;
+                var tex = Resources.Load("plus") as Texture2D;
+                sprite.disabledSprite =
+                    Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f));
+                sprite.highlightedSprite =
+                    Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f));
+                sprite.pressedSprite =
+                    Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f));
+                sprite.selectedSprite =
+                    Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f));
+                button.spriteState = sprite;
+
+                button.image.sprite =
+                    Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f));
+            });
+        }
     }
 
     public class UIBase: MonoBehaviour

@@ -2,9 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using JetBrains.Annotations;
 
 namespace ScriptMaker.Program.Data
-{
+{   
     public class Option
     {
         private string _key;
@@ -100,6 +101,11 @@ namespace ScriptMaker.Program.Data
                 sb.Append(opt.ToString(dim + 1));
             return sb.ToString();
         }
+    }
+
+    public class Options : List<Option>
+    {
+        public Option this[string s] => FindLast(x => x.Key == s);
     }
 
     public static class OptionUtil

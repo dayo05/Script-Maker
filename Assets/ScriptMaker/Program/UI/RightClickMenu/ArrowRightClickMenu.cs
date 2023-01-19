@@ -13,12 +13,6 @@ namespace ScriptMaker.Program.UI.RightClickMenu
                 BaseEntry.DeleteContent(NS);
                 RightClickMenuHandler.CloseMenu();
             });
-            AppendButton("Edit key", () =>
-            {
-                EditorMain.IsSelectingKeyOfArrow = true;
-                EditorMain.ReCalcDisplayUI("키 설정 모드");
-                RightClickMenuHandler.CloseMenu();
-            });
             
             LocateButton();
         }

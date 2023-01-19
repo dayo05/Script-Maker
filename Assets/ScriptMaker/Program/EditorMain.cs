@@ -14,6 +14,7 @@ using ScriptMaker.Util;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
+using Debug = UnityEngine.Debug;
 
 namespace ScriptMaker.Program
 {
@@ -56,9 +57,10 @@ namespace ScriptMaker.Program
             SetModInfoText("일반 모드");
         }
 
-        private float uiYPos = -70;
+        private float uiYPosTL = -70;
+        private float uiYPosBL = 70;
 
-        public void AddUIButton(string name, Texture2D texture, UnityAction onClick)
+        public void AddUIButtonTL(string name, Texture2D texture, UnityAction onClick)
         {
             CreateButton(out var addBtn, name, ui, onClick);
             var im = addBtn.GetComponent<Image>();
@@ -66,35 +68,54 @@ namespace ScriptMaker.Program
             var rect = addBtn.GetComponent<RectTransform>();
             rect.anchorMax = new Vector2(0, 1);
             rect.anchorMin = new Vector2(0, 1);
-            rect.anchoredPosition = new Vector3(70, uiYPos);
+            rect.anchoredPosition = new Vector3(70, uiYPosTL);
             rect.sizeDelta = new Vector2(100, 100);
-            uiYPos -= 110;
+            uiYPosTL -= 110;
+        }
+
+        public void AddUIButtonBL(string name, Texture2D texture, UnityAction onClick)
+        {
+            CreateButton(out var addBtn, name, ui, onClick);
+            var im = addBtn.GetComponent<Image>();
+            im.sprite = Sprite.Create(texture, Rect.MinMaxRect(0, 0, texture.width, texture.height), Vector2.zero);
+            var rect = addBtn.GetComponent<RectTransform>();
+            rect.anchorMax = new Vector2(0, 0);
+            rect.anchorMin = new Vector2(0, 0);
+            rect.anchoredPosition = new Vector3(70, uiYPosBL);
+            rect.sizeDelta = new Vector2(100, 100);
+            uiYPosTL += 110;
         }
 
         private void InitializeUI()
         {
             var addThing = GameObject.Find("AddThing");
             addThing.SetActive(false);
-            AddUIButton("AddButton", Resources.Load("Images/plus") as Texture2D, () =>
+            AddUIButtonTL("AddButton", Resources.Load("Images/plus") as Texture2D, () =>
             {
                 if (IsIgnoreSelectionMod) return;
                 addThing.SetActive(!addThing.activeSelf);
             });
-            AddUIButton("OpenButton", Resources.Load("Images/open") as Texture2D, () =>
+            AddUIButtonTL("OpenButton", Resources.Load("Images/open") as Texture2D, () =>
             {
                 if (IsIgnoreSelectionMod) return;
                 FileManager.LoadFile();
             });
-            AddUIButton("SaveButton", Resources.Load("Images/save") as Texture2D, () =>
+            AddUIButtonTL("SaveButton", Resources.Load("Images/save") as Texture2D, () =>
             {
                 if (IsIgnoreSelectionMod) return;
                 FileManager.SaveFile();
                 ReCalcDisplayUI("저장되었습니다.");
             });
-            AddUIButton("CreateNewButton", Resources.Load("Images/create_new") as Texture2D, () =>
+            AddUIButtonTL("CreateNewButton", Resources.Load("Images/create_new") as Texture2D, () =>
             {
                 if (IsIgnoreSelectionMod) return;
                 Process.Start(Process.GetCurrentProcess().MainModule.FileName);
+            });
+            
+            AddUIButtonBL("GlobalSettingsButton", Resources.Load("Images/settings") as Texture2D, () =>
+            {
+                if (IsIgnoreSelectionMod) return;
+                UIManager.DisplayGui(typeof(ScriptSettingsGui));
             });
             
             foreach (var x in addThing.GetComponentsInChildren<Button>())
@@ -155,8 +176,7 @@ namespace ScriptMaker.Program
         private static long copied = -1;
 
         public static bool IsIgnoreSelectionMod =>
-            IsSelectingKeyOfArrow || IsArrowSelectionMod || UIManager.IsGuiExists();
-        public static bool IsSelectingKeyOfArrow = false; 
+            IsArrowSelectionMod || UIManager.IsGuiExists();
         public static bool IsArrowSelectionMod = false;
 
         private static long fromSel = -1;
@@ -179,52 +199,8 @@ namespace ScriptMaker.Program
 
         private static void SetModInfoText(string text) => modInfoText.GetComponent<Text>().text = text;
 
-        private static void EditArrowKey(long NS, char s)
-        {
-            foreach (var key in Enumerable.Range('a', 'z' - 'a' + 1))
-                if (Input.GetKey((KeyCode)key))
-                {
-                    ArrowHandler.TrySetArrowKey(NS, $"{s}{(char)key}");
-                    return;
-                }
-            if (Input.GetKey(KeyCode.LeftAlt))
-            {
-                ArrowHandler.TrySetArrowKey(NS, $"{s}alt");
-                return;
-            }
-            if (Input.GetKey(KeyCode.LeftControl))
-            {
-                ArrowHandler.TrySetArrowKey(NS, $"{s}ctrl");
-                return;
-            }
-            if (Input.GetKey(KeyCode.LeftShift))
-            {
-                ArrowHandler.TrySetArrowKey(NS, $"{s}shift");
-                return;
-            }
-            if(s != 'p')
-                ArrowHandler.TrySetArrowKey(NS, $"{s}default");
-        }
-
         private void ProcessKeyInput()
         {
-            if (IsSelectingKeyOfArrow)
-            {
-                if (Input.GetKeyDown(KeyCode.Escape))
-                {
-                    IsSelectingKeyOfArrow = false;
-                    ReCalcDisplayUI();
-                    return;
-                }
-                if (Input.GetKey(KeyCode.Pause))
-                    EditArrowKey(RightClickMenuHandler.latestNS, 'p');
-                else if (Input.GetMouseButtonDown(0))
-                    EditArrowKey(RightClickMenuHandler.latestNS, '0');
-                else if (Input.GetMouseButtonDown(1))
-                    EditArrowKey(RightClickMenuHandler.latestNS, '1');
-                else if (Input.GetMouseButtonDown(2))
-                    EditArrowKey(RightClickMenuHandler.latestNS, '2');
-            }
             if (Input.GetMouseButtonDown(0))
             {
                 if(!RightClickMenuHandler.IsPointerHoverMenu())

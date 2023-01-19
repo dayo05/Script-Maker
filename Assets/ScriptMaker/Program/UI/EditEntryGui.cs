@@ -8,21 +8,15 @@ using UnityEngine.UI;
 
 namespace ScriptMaker.Program.UI
 {
-    public class EditEntryGui: global::ScriptMaker.Program.UI.UI
+    public class EditEntryGui: UI
     {
         public long NS { get; set; }
 
         void Start()
         {
+            AddDefaultUI();
             var contexts = BlockHandler.handler.Where(x => x.Value.DisplayName is not null).ToList();
-
-            CreateObject(out var background, "Background");
-            background.AssignRectTransform();
-            background.SetObjectSize(1280, 720);
-            background.SetObjectDefaultPos();
-            var bgi = background.AddComponent<Image>();
-            bgi.color = Color.gray;
-
+            
             CreateObject(out var subOption, "SubOption");
             subOption.AssignRectTransform();
             subOption.SetObjectSize(1180, 475);
@@ -40,33 +34,6 @@ namespace ScriptMaker.Program.UI
                 ed.Context = BlockHandler.handler[contexts[0].Key].DefaultContext.Clone();
                 ed.baseDialog = this;
             }
-            
-            CreateButton(out var closeButton, "CloseButton", () =>
-            {
-                if (IsFront)
-                    UIManager.CloseGui();
-            });
-            closeButton.SetObjectSize(75, 75);
-            closeButton.SetObjectPos(-550, 275);
-            closeButton.transform.rotation = Quaternion.Euler(new Vector3(0, 0, 45));
-            closeButton.ButtonTransaction(button =>
-            {
-                button.transition = Selectable.Transition.SpriteSwap;
-                var sprite = button.spriteState;
-                var tex = Resources.Load("plus") as Texture2D;
-                sprite.disabledSprite =
-                    Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f));
-                sprite.highlightedSprite =
-                    Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f));
-                sprite.pressedSprite =
-                    Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f));
-                sprite.selectedSprite =
-                    Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f));
-                button.spriteState = sprite;
-
-                button.image.sprite =
-                    Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f));
-            });
 
             CreateButton(out var applyButton, "ApplyButton", () =>
             {

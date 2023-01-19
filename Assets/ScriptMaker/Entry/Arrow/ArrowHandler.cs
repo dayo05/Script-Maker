@@ -13,7 +13,7 @@ namespace ScriptMaker.Entry.Arrow
 {
     public static class ArrowHandler
     {
-        public static readonly Dictionary<long, BaseArrow> Arrows = new();
+        public static readonly Dictionary<long, Arrow> Arrows = new();
         private static GameObject ArrowEntry;
         private static GameObject Canvas;
 
@@ -24,44 +24,21 @@ namespace ScriptMaker.Entry.Arrow
         }
 
         public static bool IsNSExists(long NS) => Arrows.ContainsKey(NS);
-        public static BaseArrowContext GetArrowContext(long NS) => Arrows[NS].Context;
+        public static ArrowContext GetArrowContext(long NS) => Arrows[NS].Context;
 
         public static void RemoveArrow(long NS)
         {
             Object.Destroy(Arrows[NS].gameObject);
             Arrows.Remove(NS);
         }
-        public static void TrySetArrowKey(long NS, string key)
-        {
-            try
-            {
-                if (Arrows[NS].Context is not ArrowContext)
-                    throw new AccessViolationException("Not able to set key on this Arrow");
-                var ctx = (ArrowContext)Arrows[NS].Context;
-                ValidationArrowKey(ctx, key);
-                ctx.Key = key;
-                EditorMain.IsSelectingKeyOfArrow = false;
-                EditorMain.ReCalcDisplayUI();
-            }
-            catch (InvalidOperationException)
-            {
-                EditorMain.ReCalcDisplayUI("키 조합이 중복됩니다!");
-            }
-        }
         
-        private static void ValidationNewArrow(BaseArrowContext arrow)
+        private static void ValidationNewArrow(ArrowContext arrow)
         {
             if (BlockHandler.Blocks[arrow.To] is BeginBlock)
                 throw new InvalidOperationException("Begin entry is not able to receive arrow");
             var cached = Arrows.Where(x => x.Value.Context.From == arrow.From).ToArray();
             if (cached.Any(x => BlockHandler.Blocks[x.Value.Context.To] is not MultipleSelectableBlock) || cached.Length != 0 && BlockHandler.Blocks[arrow.To] is not MultipleSelectableBlock)
                 throw new InvalidOperationException("2+ child is only allowed when every mod of child is Player");
-        }
-
-        private static void ValidationArrowKey(ArrowContext arrow, string newKey)
-        {
-            if (Arrows.Where(x => x.Value.Context is ArrowContext && x.Value.Context.From == arrow.From).Any(x => ((ArrowContext)x.Value.Context).Key == newKey && x.Value.Context.To != arrow.To))
-                throw new InvalidOperationException("Arrow key is not allowed to duplicate in one starting block.");
         }
         
         public static void CreateArrowUnsafe(long NS, ArrowContext a)

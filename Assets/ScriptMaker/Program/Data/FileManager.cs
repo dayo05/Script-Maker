@@ -60,6 +60,9 @@ namespace ScriptMaker.Program.Data
                     var cameraOptions = options.Last(x => x.Key == "Option" && x.Value == "Camera");
                     MainCamera.transform.position = new Vector3(cameraOptions["X"].Float(),
                         cameraOptions["Y"].Float(), MainCamera.transform.position.z);
+
+                    ScriptSettings.CanMovePrevious =
+                        options.LastOrDefault(x => x.Key == "CanMovePrevious")?.Bool ?? false;
                 }
 
                 {
@@ -114,11 +117,12 @@ namespace ScriptMaker.Program.Data
 
                 var optList = new List<Option>
                 {
-                    Option("Version", 0.7),
+                    Option("Version", 0.8),
                     Option("Option", "Camera")
                         .Append("X", MainCamera.transform.position.x)
                         .Append("Y", MainCamera.transform.position.y),
-                    Option("NS", EditorMain.currentNS)
+                    Option("NS", EditorMain.currentNS),
+                    Option("CanMovePrevious", ScriptSettings.CanMovePrevious)
                 };
 
                 optList.AddRange(BlockHandler.Blocks.Values.Select(block => block.Serialize()));

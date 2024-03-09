@@ -8,23 +8,14 @@ using UnityEngine.EventSystems;
 
 namespace ScriptMaker.Entry.Arrow
 {
-    public class Arrow: BaseEntry, IPointerEnterHandler, IPointerExitHandler
+    public class Arrow : BaseEntry, IPointerEnterHandler, IPointerExitHandler
     {
         public ArrowContext Context;
         private GameObject triangle;
+
         private void Start()
         {
             triangle = Instantiate(Resources.Load("Triangle") as GameObject, GameObject.Find("Canvas").transform, true);
-        }
-        public void OnPointerEnter(PointerEventData eventData)
-        {
-            EditorMain.PointedNS = NS;
-        }
-
-        public void OnPointerExit(PointerEventData eventData)
-        {
-            if (EditorMain.PointedNS == NS)
-                EditorMain.PointedNS = -1;
         }
 
         protected void Update()
@@ -58,13 +49,27 @@ namespace ScriptMaker.Entry.Arrow
             }
         }
 
-        public Option Serialize() => new Option("Arrow", GetType().Name)
-            .Append("NS", NS)
-            .Append(Context.Serialize());
-        
         protected void OnDestroy()
         {
             Destroy(triangle);
+        }
+
+        public void OnPointerEnter(PointerEventData eventData)
+        {
+            EditorMain.PointedNS = NS;
+        }
+
+        public void OnPointerExit(PointerEventData eventData)
+        {
+            if (EditorMain.PointedNS == NS)
+                EditorMain.PointedNS = -1;
+        }
+
+        public Option Serialize()
+        {
+            return new Option("Arrow", GetType().Name)
+                .Append("NS", NS)
+                .Append(Context.Serialize());
         }
     }
 }

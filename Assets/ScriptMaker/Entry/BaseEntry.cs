@@ -6,10 +6,10 @@ using UnityEngine;
 
 namespace ScriptMaker.Entry
 {
-    public abstract class BaseEntry: MonoBehaviour
+    public abstract class BaseEntry : MonoBehaviour
     {
         public long NS { get; set; } = -1;
-        
+
         public static void DeleteContent(long NS)
         {
             if (BlockHandler.IsNSExists(NS))
@@ -22,7 +22,10 @@ namespace ScriptMaker.Entry
                 ArrowHandler.RemoveArrow(NS);
                 EditorMain.DeselectEntry();
             }
-            else throw new IndexOutOfRangeException($"Trying to remove not exists namespace {NS}");
+            else
+            {
+                throw new IndexOutOfRangeException($"Trying to remove not exists namespace {NS}");
+            }
         }
     }
 }

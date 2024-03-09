@@ -1,7 +1,5 @@
 using System;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
 using ScriptMaker.Entry.Arrow;
 using ScriptMaker.Entry.Arrow.Contexts;
 using ScriptMaker.Entry.Block;
@@ -14,22 +12,41 @@ using ScriptMaker.Util;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.UI;
-using Debug = UnityEngine.Debug;
 
 namespace ScriptMaker.Program
 {
     public class EditorMain : UIBase
     {
-        private bool closeHandle = false;
-        public static EditorMain Instance = null;
+        public static EditorMain Instance;
+
+        private static GameObject ui;
+        private static GameObject mainCamera;
+        private static GameObject modInfoText;
+        public static long PointedNS = -1;
+
+        private static long currentOpenNs = -1;
+        private static long copied = -1;
+        public static bool IsArrowSelectionMod;
+
+        private static long fromSel = -1;
+
+        public static long currentNS = 0;
+        private readonly float uiYPosBL = 70;
+        private bool closeHandle;
+
+        private float uiYPosTL = -70;
+
+        public static bool IsIgnoreSelectionMod =>
+            IsArrowSelectionMod || UIManager.IsGuiExists();
+
         private void Awake()
         {
             if (Instance is not null)
                 throw new InvalidOperationException("Cannot initialize EditorMain twice");
             Instance = this;
-            
+
             Log.Info("Start initializing editor");
-            
+
             ui = GameObject.Find("UI");
 
             Application.logMessageReceived += (condition, trace, type) =>
@@ -47,18 +64,29 @@ namespace ScriptMaker.Program
             BlockHandler.Initialize();
             BlockHandler.RegisterBlock(typeof(BeginBlock), new Option("Context", "BeginBlockContext")
                 .Append("Label", "default"), typeof(BeginBlockContextEditDialog), "Begin");
-            
+
             InitializeUI();
-            
+
             Log.Info("Start loading mods");
             ModManager.LoadMods();
-            
+
             modInfoText = GameObject.Find("ModInfoText");
             SetModInfoText("일반 모드");
         }
 
-        private float uiYPosTL = -70;
-        private float uiYPosBL = 70;
+        private void Start()
+        {
+            BlockHandler.InitializeBeginEntry();
+
+            Log.Info("Initializing editor finished");
+            Log.Info("Running Post Initialization Step");
+            ModEvent.Context.PostLoadingEvent();
+        }
+
+        private void Update()
+        {
+            ProcessKeyInput();
+        }
 
         public void AddUIButtonTL(string name, Texture2D texture, UnityAction onClick)
         {
@@ -111,13 +139,13 @@ namespace ScriptMaker.Program
                 if (IsIgnoreSelectionMod) return;
                 Process.Start(Process.GetCurrentProcess().MainModule.FileName);
             });
-            
+
             AddUIButtonBL("GlobalSettingsButton", Resources.Load("Images/settings") as Texture2D, () =>
             {
                 if (IsIgnoreSelectionMod) return;
                 UIManager.DisplayGui(typeof(ScriptSettingsGui));
             });
-            
+
             foreach (var x in addThing.GetComponentsInChildren<Button>())
                 switch (x.name)
                 {
@@ -138,7 +166,7 @@ namespace ScriptMaker.Program
                         });
                         break;
                 }
-            
+
             Application.wantsToQuit += () =>
             {
                 if (closeHandle) return true;
@@ -167,43 +195,16 @@ namespace ScriptMaker.Program
             };
         }
 
-        private static GameObject ui;
-        private static GameObject mainCamera;
-        private static GameObject modInfoText;
-        public static long PointedNS = -1;
-
-        private static long currentOpenNs = -1;
-        private static long copied = -1;
-
-        public static bool IsIgnoreSelectionMod =>
-            IsArrowSelectionMod || UIManager.IsGuiExists();
-        public static bool IsArrowSelectionMod = false;
-
-        private static long fromSel = -1;
-
-        public static long currentNS = 0;
-        
-        private void Start()
+        private static void SetModInfoText(string text)
         {
-            BlockHandler.InitializeBeginEntry();
-
-            Log.Info("Initializing editor finished");
-            Log.Info("Running Post Initialization Step");
-            ModEvent.Context.PostLoadingEvent();
+            modInfoText.GetComponent<Text>().text = text;
         }
-
-        private void Update()
-        {
-            ProcessKeyInput();
-        }
-
-        private static void SetModInfoText(string text) => modInfoText.GetComponent<Text>().text = text;
 
         private void ProcessKeyInput()
         {
             if (Input.GetMouseButtonDown(0))
             {
-                if(!RightClickMenuHandler.IsPointerHoverMenu())
+                if (!RightClickMenuHandler.IsPointerHoverMenu())
                     RightClickMenuHandler.CloseMenu();
                 if (BlockHandler.IsNSExists(PointedNS))
                 {
@@ -257,10 +258,8 @@ namespace ScriptMaker.Program
             else if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.V))
             {
                 if (copied != -1)
-                {
                     BlockHandler.CreateEntry(BlockHandler.GetBlockContent(copied).Clone(),
                         new Point(BlockHandler.Blocks[copied].Point.X + 10, BlockHandler.Blocks[copied].Point.Y - 10));
-                }
             }
             else if (Input.GetKeyDown(KeyCode.Escape))
             {
@@ -304,8 +303,10 @@ namespace ScriptMaker.Program
         }
 
         public static void ReCalcDisplayUIWithKeepPrevInfo()
-            => ui.SetActive(!IsIgnoreSelectionMod);
-        
+        {
+            ui.SetActive(!IsIgnoreSelectionMod);
+        }
+
         public static void ReCalcDisplayUI(string data = "")
         {
             if (IsIgnoreSelectionMod)
@@ -318,10 +319,13 @@ namespace ScriptMaker.Program
                 if (data == "")
                     data = "일반 모드";
             }
+
             SetModInfoText(data);
         }
 
         public static void DeselectEntry()
-            => currentOpenNs = -1;
+        {
+            currentOpenNs = -1;
+        }
     }
 }

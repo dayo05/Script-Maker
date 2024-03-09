@@ -2,7 +2,7 @@
 
 namespace ScriptMaker.Program.UI.RightClickMenu
 {
-    public class ArrowRightClickMenu : global::ScriptMaker.Program.UI.RightClickMenu.RightClickMenu
+    public class ArrowRightClickMenu : RightClickMenu
     {
         // Start is called before the first frame update
         protected override void Start()
@@ -13,7 +13,7 @@ namespace ScriptMaker.Program.UI.RightClickMenu
                 BaseEntry.DeleteContent(NS);
                 RightClickMenuHandler.CloseMenu();
             });
-            
+
             LocateButton();
         }
     }

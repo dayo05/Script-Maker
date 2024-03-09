@@ -23,28 +23,36 @@ namespace ScriptMaker.Entry.Arrow
             Canvas = GameObject.Find("Canvas");
         }
 
-        public static bool IsNSExists(long NS) => Arrows.ContainsKey(NS);
-        public static ArrowContext GetArrowContext(long NS) => Arrows[NS].Context;
+        public static bool IsNSExists(long NS)
+        {
+            return Arrows.ContainsKey(NS);
+        }
+
+        public static ArrowContext GetArrowContext(long NS)
+        {
+            return Arrows[NS].Context;
+        }
 
         public static void RemoveArrow(long NS)
         {
             Object.Destroy(Arrows[NS].gameObject);
             Arrows.Remove(NS);
         }
-        
+
         private static void ValidationNewArrow(ArrowContext arrow)
         {
             if (BlockHandler.Blocks[arrow.To] is BeginBlock)
                 throw new InvalidOperationException("Begin entry is not able to receive arrow");
             var cached = Arrows.Where(x => x.Value.Context.From == arrow.From).ToArray();
-            if (cached.Any(x => BlockHandler.Blocks[x.Value.Context.To] is not MultipleSelectableBlock) || cached.Length != 0 && BlockHandler.Blocks[arrow.To] is not MultipleSelectableBlock)
+            if (cached.Any(x => BlockHandler.Blocks[x.Value.Context.To] is not MultipleSelectableBlock) ||
+                (cached.Length != 0 && BlockHandler.Blocks[arrow.To] is not MultipleSelectableBlock))
                 throw new InvalidOperationException("2+ child is only allowed when every mod of child is Player");
         }
-        
+
         public static void CreateArrowUnsafe(long NS, ArrowContext a)
         {
             var g = Object.Instantiate(ArrowEntry, Canvas.transform, true);
-            var arrow = g.AddComponent<ScriptMaker.Entry.Arrow.Arrow>();
+            var arrow = g.AddComponent<Arrow>();
             arrow.NS = NS;
             arrow.Context = a;
             Arrows.Add(NS, arrow);
@@ -65,7 +73,7 @@ namespace ScriptMaker.Entry.Arrow
             }
             finally
             {
-                if(EditorMain.IsArrowSelectionMod)
+                if (EditorMain.IsArrowSelectionMod)
                     EditorMain.ReCalcDisplayUI("화살표 생성 모드");
             }
         }

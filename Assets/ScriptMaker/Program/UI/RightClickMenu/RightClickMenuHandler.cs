@@ -6,10 +6,10 @@ namespace ScriptMaker.Program.UI.RightClickMenu
 {
     public static class RightClickMenuHandler
     {
-        public static ScriptMaker.Program.UI.RightClickMenu.RightClickMenu currentMenu { get; private set; }
         public static long latestNS = -1;
-        private static bool isInitialized = false;
+        private static bool isInitialized;
         private static GameObject canvas;
+        public static RightClickMenu currentMenu { get; private set; }
 
         public static void Initialize()
         {
@@ -18,9 +18,9 @@ namespace ScriptMaker.Program.UI.RightClickMenu
             canvas = GameObject.Find("DialogCanvas");
         }
 
-        public static ScriptMaker.Program.UI.RightClickMenu.RightClickMenu OpenMenu(Type menuType, long NS)
+        public static RightClickMenu OpenMenu(Type menuType, long NS)
         {
-            if (!menuType.IsSubclassOf(typeof(ScriptMaker.Program.UI.RightClickMenu.RightClickMenu)))
+            if (!menuType.IsSubclassOf(typeof(RightClickMenu)))
                 throw new Exception($"Type {menuType} is not instance of UI");
             if (currentMenu is not null)
             {
@@ -30,7 +30,7 @@ namespace ScriptMaker.Program.UI.RightClickMenu
 
             var rightClickMenuObj = new GameObject();
             rightClickMenuObj.transform.SetParent(canvas.transform);
-            var menu = rightClickMenuObj.AddComponent(menuType) as ScriptMaker.Program.UI.RightClickMenu.RightClickMenu;
+            var menu = rightClickMenuObj.AddComponent(menuType) as RightClickMenu;
 
             menu.NS = NS;
             currentMenu = menu;
@@ -40,12 +40,14 @@ namespace ScriptMaker.Program.UI.RightClickMenu
 
         public static void CloseMenu()
         {
-            if (currentMenu is null) return; 
+            if (currentMenu is null) return;
             Object.Destroy(currentMenu.gameObject);
             currentMenu = null;
         }
 
         public static bool IsPointerHoverMenu()
-            => currentMenu is not null && currentMenu.IsPointerOnMenu;
+        {
+            return currentMenu is not null && currentMenu.IsPointerOnMenu;
+        }
     }
 }

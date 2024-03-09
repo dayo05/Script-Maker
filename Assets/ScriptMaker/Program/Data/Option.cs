@@ -4,17 +4,30 @@ using System.Linq;
 using System.Text;
 
 namespace ScriptMaker.Program.Data
-{   
+{
     public class Option
     {
+        public readonly List<Option> subOptions = new();
         private string _key;
+
+        private string _value;
+
+        public Option(string key, object value) : this(key, value.ToString())
+        {
+        }
+
+        public Option(string key, string value)
+        {
+            Key = key;
+            Value = value;
+        }
+
         public string Key
         {
             get => _key.ToRawOptionString();
             private set => _key = value.ToSafeOptionString();
         }
 
-        private string _value;
         public string Value
         {
             get => _value.ToRawOptionString();
@@ -28,21 +41,14 @@ namespace ScriptMaker.Program.Data
         public bool Bool => bool.Parse(Value);
         public long Long => long.Parse(Value);
 
-        public readonly List<Option> subOptions = new();
-
-        public Option(string key, object value) : this(key, value.ToString()) { }
-
-        public Option(string key, string value)
-        {
-            this.Key = key;
-            this.Value = value;
-        }
+        public IEnumerable<Option> this[string key] => subOptions.Where(x => x.Key == key);
 
         public Option Append(string key, object value)
         {
             subOptions.Add((key, value.ToString()).CreateOption());
             return this;
         }
+
         public Option Append(string key, string value)
         {
             subOptions.Add((key, value).CreateOption());
@@ -54,8 +60,6 @@ namespace ScriptMaker.Program.Data
             subOptions.Add(option);
             return this;
         }
-
-        public IEnumerable<Option> this[string key] => subOptions.Where(x => x.Key == key);
 
         public Option Set(string key, string value)
         {
@@ -80,13 +84,17 @@ namespace ScriptMaker.Program.Data
         }
 
         public string Export()
-            => ToString(0);
+        {
+            return ToString(0);
+        }
 
-        #pragma warning disable 0809 //Remove ToString method on option
+#pragma warning disable 0809 //Remove ToString method on option
         [Obsolete("Do not use ToString to option. Use Export() instead", true)]
         public override string ToString()
-            => throw new InvalidOperationException("Do not use ToString to option. Use Export() instead");
-        #pragma warning restore 0809
+        {
+            throw new InvalidOperationException("Do not use ToString to option. Use Export() instead");
+        }
+#pragma warning restore 0809
 
         private string ToString(int dim)
         {
@@ -109,19 +117,49 @@ namespace ScriptMaker.Program.Data
 
     public static class OptionUtil
     {
-        public static int Int(this IEnumerable<Option> o) => o.First().Int;
-        public static float Float(this IEnumerable<Option> o) => o.First().Float;
-        public static double Double(this IEnumerable<Option> o) => o.First().Double;
-        public static bool Bool(this IEnumerable<Option> o) => o.First().Bool;
-        public static string String(this IEnumerable<Option> o) => o.First().String;
-        public static long Long(this IEnumerable<Option> o) => o.First().Long;
+        public static int Int(this IEnumerable<Option> o)
+        {
+            return o.First().Int;
+        }
+
+        public static float Float(this IEnumerable<Option> o)
+        {
+            return o.First().Float;
+        }
+
+        public static double Double(this IEnumerable<Option> o)
+        {
+            return o.First().Double;
+        }
+
+        public static bool Bool(this IEnumerable<Option> o)
+        {
+            return o.First().Bool;
+        }
+
+        public static string String(this IEnumerable<Option> o)
+        {
+            return o.First().String;
+        }
+
+        public static long Long(this IEnumerable<Option> o)
+        {
+            return o.First().Long;
+        }
+
         public static Option CreateOption(this (string, string) k)
-            => new(k.Item1, k.Item2);
+        {
+            return new Option(k.Item1, k.Item2);
+        }
 
         public static string ToSafeOptionString(this string s)
-            => s.Replace("\r", "").Replace("\\", "\\\\").Replace("\n", "\\n").Replace(">", "\\>");
+        {
+            return s.Replace("\r", "").Replace("\\", "\\\\").Replace("\n", "\\n").Replace(">", "\\>");
+        }
 
         public static string ToRawOptionString(this string s)
-            => s.Replace("\r", "").Replace("\\>", ">").Replace("\\n", "\n").Replace("\\\\", "\\");
+        {
+            return s.Replace("\r", "").Replace("\\>", ">").Replace("\\n", "\n").Replace("\\\\", "\\");
+        }
     }
 }

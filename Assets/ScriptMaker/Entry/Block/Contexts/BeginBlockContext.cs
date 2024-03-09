@@ -1,4 +1,3 @@
-using System;
 using ScriptMaker.Entry.Block.Contexts.Dialog;
 using ScriptMaker.Program.Data;
 

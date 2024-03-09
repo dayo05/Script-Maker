@@ -4,7 +4,7 @@ using ScriptMaker.Util;
 
 namespace ScriptMaker.Program.UI.RightClickMenu
 {
-    public class BlockRightClickMenu : global::ScriptMaker.Program.UI.RightClickMenu.RightClickMenu
+    public class BlockRightClickMenu : RightClickMenu
     {
         protected override void Start()
         {

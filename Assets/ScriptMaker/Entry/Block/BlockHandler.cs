@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using ScriptMaker.Entry.Block.Contexts;
 using ScriptMaker.Entry.Block.Contexts.Dialog;
 using ScriptMaker.Program.Data;
 using ScriptMaker.Program.Mod;
@@ -17,9 +16,9 @@ namespace ScriptMaker.Entry.Block
     public class BlockInfo
     {
         public Type Block;
+        public Option DefaultContext;
         public string DisplayName;
         public Type EditDialog;
-        public Option DefaultContext;
 
         public void Validate()
         {
@@ -29,11 +28,12 @@ namespace ScriptMaker.Entry.Block
                 throw new ArgumentException($"Dialog {EditDialog} don't extends ContextEditDialog");
         }
     }
+
     public static class BlockHandler
     {
         public static Dictionary<string, BlockInfo> handler = new();
         public static Dictionary<long, BaseBlock> Blocks = new();
-        
+
         private static GameObject BaseEntry;
         private static GameObject Canvas;
         private static GameObject MainCamera;
@@ -44,10 +44,16 @@ namespace ScriptMaker.Entry.Block
             MainCamera = GameObject.Find("Main Camera");
             BaseEntry = Resources.Load("Entry") as GameObject;
         }
-        
-        public static Option GetBlockContent(long NS) => Blocks[NS].Context;
 
-        public static bool IsNSExists(long NS) => Blocks.ContainsKey(NS);
+        public static Option GetBlockContent(long NS)
+        {
+            return Blocks[NS].Context;
+        }
+
+        public static bool IsNSExists(long NS)
+        {
+            return Blocks.ContainsKey(NS);
+        }
 
         public static void RemoveBlock(long NS)
         {
@@ -55,7 +61,8 @@ namespace ScriptMaker.Entry.Block
             Blocks.Remove(NS);
         }
 
-        public static void RegisterBlock(Type block, Option defaultContext, Type contextEditDialogType, string displayName)
+        public static void RegisterBlock(Type block, Option defaultContext, Type contextEditDialogType,
+            string displayName)
         {
             if (defaultContext.Key != "Context")
                 throw new InvalidOperationException($"Not context option: {defaultContext.Key}");
@@ -69,16 +76,18 @@ namespace ScriptMaker.Entry.Block
                 DefaultContext = defaultContext
             };
             info.Validate();
-            if (handler.ContainsKey(defaultContext.Value))
+            if (!handler.TryAdd(defaultContext.Value, info))
             {
-                Log.Error(new ArgumentException($"Failed to Register block: {displayName}. Context {defaultContext.Value} already exists"), Assembly.GetCallingAssembly().GetName().Name);
+                Log.Error(
+                    new ArgumentException(
+                        $"Failed to Register block: {displayName}. Context {defaultContext.Value} already exists"),
+                    Assembly.GetCallingAssembly().GetName().Name);
                 return;
             }
 
-            handler[defaultContext.Value] = info;
             Log.Info($"Block registered: {displayName}", Assembly.GetCallingAssembly().GetName().Name);
         }
-        
+
         private static BaseBlock CreateBlock(GameObject g, long NS, Option ctx, Point p)
         {
             if (ctx.Key != "Context")
@@ -89,7 +98,9 @@ namespace ScriptMaker.Entry.Block
         }
 
         public static Type GetDialog(string ctxType)
-            => handler[ctxType].EditDialog;
+        {
+            return handler[ctxType].EditDialog;
+        }
 
         public static GameObject InplaceEntry(long NS, Option c)
         {

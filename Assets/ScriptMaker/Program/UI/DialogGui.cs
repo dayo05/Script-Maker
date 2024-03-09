@@ -15,10 +15,11 @@ namespace ScriptMaker.Program.UI
     public enum DialogResult
     {
         Yes,
-        No, 
+        No,
         Cancel
     }
-    public class DialogGui: UI
+
+    public class DialogGui : UI
     {
         public string message;
         public DialogType type;
@@ -91,7 +92,8 @@ namespace ScriptMaker.Program.UI
             cancelButtonTextObj.SetObjectDefaultPos();
         }
 
-        public static void DisplayDialog(string message, DialogType type = DialogType.Ok, Action<DialogResult> callback = null)
+        public static void DisplayDialog(string message, DialogType type = DialogType.Ok,
+            Action<DialogResult> callback = null)
         {
             Log.Info("Try to display dialog: " + message);
             var gui = (DialogGui) UIManager.DisplayGui(typeof(DialogGui));

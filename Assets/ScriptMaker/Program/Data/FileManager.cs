@@ -15,14 +15,16 @@ namespace ScriptMaker.Program.Data
 {
     public static class FileManager
     {
-        private static string currentFile = null;
+        private static string currentFile;
         private static GameObject MainCamera;
+        private static GameObject Canvas;
 
         public static void Initialize()
         {
             MainCamera = GameObject.Find("Main Camera");
+            Canvas = GameObject.Find("Canvas");
         }
-        
+
         public static void LoadFile()
         {
             try
@@ -44,7 +46,7 @@ namespace ScriptMaker.Program.Data
                     if (c == string.Empty) continue;
                     if (c[0] == '#') continue;
                     var (d, cmd) = CountStartRArrow(c);
-                    if(cmd == string.Empty) continue;
+                    if (cmd == string.Empty) continue;
                     if (d > prv + 1) throw new InvalidDataException("Compile error on line " + line);
 
                     var o = options;
@@ -60,6 +62,9 @@ namespace ScriptMaker.Program.Data
                     var cameraOptions = options.Last(x => x.Key == "Option" && x.Value == "Camera");
                     MainCamera.transform.position = new Vector3(cameraOptions["X"].Float(),
                         cameraOptions["Y"].Float(), MainCamera.transform.position.z);
+                    var scaleOpt = cameraOptions["Scale"].ToList();
+                    if (scaleOpt.Count != 0)
+                        Canvas.transform.localScale = Vector3.one * scaleOpt.Float();
 
                     ScriptSettings.CanMovePrevious =
                         options.LastOrDefault(x => x.Key == "CanMovePrevious")?.Bool ?? false;
@@ -72,14 +77,15 @@ namespace ScriptMaker.Program.Data
 
                     foreach (var blockOption in options.Where(x => x.Key == "Block"))
                         BlockHandler.CreateEntryByOption(blockOption);
-                    
-                    foreach(var arrowOption in options.Where(x => x.Key == "Arrow"))
-                        ArrowHandler.CreateArrowUnsafe(arrowOption["NS"].Long(), (ArrowContext)new ArrowContext().ReadOption(arrowOption["Context"].First()));
+
+                    foreach (var arrowOption in options.Where(x => x.Key == "Arrow"))
+                        ArrowHandler.CreateArrowUnsafe(arrowOption["NS"].Long(),
+                            new ArrowContext().ReadOption(arrowOption["Context"].First()));
                 }
 
                 (int, string) CountStartRArrow(string s)
                 {
-                    for(var i = 0; i < s.Length; i++)
+                    for (var i = 0; i < s.Length; i++)
                         if (s[i] != '>')
                             return (i, s[i..]);
                     return (s.Length, string.Empty);
@@ -87,7 +93,8 @@ namespace ScriptMaker.Program.Data
             }
             catch (Exception e)
             {
-                DialogGui.DisplayDialog(e.Message + "\nTrying to quit.\n" + e.StackTrace, DialogType.Ok, _ => Application.Quit());
+                DialogGui.DisplayDialog(e.Message + "\nTrying to quit.\n" + e.StackTrace, DialogType.Ok,
+                    _ => Application.Quit());
             }
         }
 
@@ -97,7 +104,6 @@ namespace ScriptMaker.Program.Data
             {
                 if (currentFile is null)
                     while (true)
-                    {
                         try
                         {
                             var path = StandaloneFileBrowser.SaveFilePanel("Save script", "", "",
@@ -113,14 +119,14 @@ namespace ScriptMaker.Program.Data
                         {
                             //ignore
                         }
-                    }
 
                 var optList = new List<Option>
                 {
                     Option("Version", 0.8),
                     Option("Option", "Camera")
                         .Append("X", MainCamera.transform.position.x)
-                        .Append("Y", MainCamera.transform.position.y),
+                        .Append("Y", MainCamera.transform.position.y)
+                        .Append("Scale", Canvas.transform.localScale.x),
                     Option("NS", EditorMain.currentNS),
                     Option("CanMovePrevious", ScriptSettings.CanMovePrevious)
                 };
@@ -128,16 +134,18 @@ namespace ScriptMaker.Program.Data
                 optList.AddRange(BlockHandler.Blocks.Values.Select(block => block.Serialize()));
 
                 optList.AddRange(ArrowHandler.Arrows.Values.Select(arrow => arrow.Serialize()));
-                
+
                 //Save to currentFile
                 using var sw = new StreamWriter(currentFile);
-                foreach(var o in optList)
+                foreach (var o in optList)
                     sw.WriteLine(o.Export());
 
                 callback?.Invoke();
 
                 Option Option(string key, object value)
-                    => new(key, value);
+                {
+                    return new Option(key, value);
+                }
             }
             catch (Exception e)
             {

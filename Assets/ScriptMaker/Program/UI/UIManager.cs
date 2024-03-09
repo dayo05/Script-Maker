@@ -10,14 +10,14 @@ namespace ScriptMaker.Program.UI
         private static GameObject canvas;
         private static bool isInitialized;
 
+        private static readonly Stack<UI> uiStack = new();
+
         public static void Initialize()
         {
             if (isInitialized) throw new Exception("Initialize twice");
             isInitialized = true;
             canvas = GameObject.Find("DialogCanvas");
         }
-
-        private static Stack<UI> uiStack = new Stack<UI>();
 
         public static UI DisplayGui(Type uiType)
         {
@@ -35,10 +35,14 @@ namespace ScriptMaker.Program.UI
         }
 
         public static UI GetCurrentGui()
-            => uiStack.Peek();
+        {
+            return uiStack.Peek();
+        }
 
         public static bool IsGuiExists()
-            => uiStack.Count != 0;
+        {
+            return uiStack.Count != 0;
+        }
 
         public static void CloseGui()
         {

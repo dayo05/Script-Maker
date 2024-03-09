@@ -1,9 +1,9 @@
 using System;
+using System.Reflection;
+using UnityEngine;
 #if !UNITY_EDITOR
 using System.IO;
 #endif
-using UnityEngine;
-using System.Reflection;
 
 namespace ScriptMaker.Util
 {
@@ -27,7 +27,7 @@ namespace ScriptMaker.Util
         }
         private static readonly StreamWriter logStream;
 #endif
-        
+
         public static void Info(string message, string assemblyName = null)
         {
 #if !UNITY_EDITOR
@@ -39,7 +39,10 @@ namespace ScriptMaker.Util
 #endif
         }
 
-        public static void Info(Exception e, string assemblyName = null) => Info(e.ToString(), assemblyName ?? Assembly.GetCallingAssembly().GetName().Name);
+        public static void Info(Exception e, string assemblyName = null)
+        {
+            Info(e.ToString(), assemblyName ?? Assembly.GetCallingAssembly().GetName().Name);
+        }
 
         public static void Warn(string message, string assemblyName = null)
         {
@@ -49,11 +52,14 @@ namespace ScriptMaker.Util
             logStream.Flush();
 #else
             Debug.LogWarning(message);
-#endif      
+#endif
         }
 
-        public static void Warn(Exception e, string assemblyName = null) => Warn(e.ToString(), assemblyName ?? Assembly.GetCallingAssembly().GetName().Name);
-        
+        public static void Warn(Exception e, string assemblyName = null)
+        {
+            Warn(e.ToString(), assemblyName ?? Assembly.GetCallingAssembly().GetName().Name);
+        }
+
         public static void Error(string message, string assemblyName = null)
         {
 #if !UNITY_EDITOR
@@ -62,9 +68,12 @@ namespace ScriptMaker.Util
             logStream.Flush();
 #else
             Debug.LogError(message);
-#endif      
+#endif
         }
 
-        public static void Error(Exception e, string assemblyName = null) => Error(e.ToString(), assemblyName ?? Assembly.GetCallingAssembly().GetName().Name);
+        public static void Error(Exception e, string assemblyName = null)
+        {
+            Error(e.ToString(), assemblyName ?? Assembly.GetCallingAssembly().GetName().Name);
+        }
     }
 }

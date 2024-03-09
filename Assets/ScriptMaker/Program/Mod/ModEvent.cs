@@ -13,7 +13,10 @@ namespace ScriptMaker.Program.Mod
             public static Action<ContextEditDialog, InputField> CreateInputFieldEvent = (_, _) => { };
             public static Action<ContextEditDialog, Button> CreateButtonEvent = (_, _) => { };
             public static Action<ContextEditDialog, Text> CreateTextEvent = (_, _) => { };
-            public static Action<ContextEditDialog, Dropdown, List<(string displayName, string serializedName)>> CreateDropdownEvent = (_, _, _) => { };
+
+            public static Action<ContextEditDialog, Dropdown, List<(string displayName, string serializedName)>>
+                CreateDropdownEvent = (_, _, _) => { };
+
             public static Action<ContextEditDialog, Dropdown, string> OnDropdownMenuChangedEvent = (_, _, _) => { };
             public static Action<ContextEditDialog, Image> CreateImageEvent = (_, _) => { };
             public static Action<ContextEditDialog, Toggle> CreateCheckboxEvent = (_, _) => { };

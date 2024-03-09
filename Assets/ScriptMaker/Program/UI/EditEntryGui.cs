@@ -1,22 +1,20 @@
-using System;
 using System.Linq;
 using ScriptMaker.Entry.Block;
-using ScriptMaker.Entry.Block.Contexts;
 using ScriptMaker.Entry.Block.Contexts.Dialog;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace ScriptMaker.Program.UI
 {
-    public class EditEntryGui: UI
+    public class EditEntryGui : UI
     {
         public long NS { get; set; }
 
-        void Start()
+        private void Start()
         {
             AddDefaultUI();
             var contexts = BlockHandler.handler.Where(x => x.Value.DisplayName is not null).ToList();
-            
+
             CreateObject(out var subOption, "SubOption");
             subOption.AssignRectTransform();
             subOption.SetObjectSize(1180, 475);
@@ -50,7 +48,7 @@ namespace ScriptMaker.Program.UI
             applyButtonTextObj.SetObjectDefaultPos();
             applyButtonTextObj.GetComponent<Text>().fontSize = 24;
 
-            var dropdownObj = Instantiate(Resources.Load("Dropdown"), this.transform, true) as GameObject;
+            var dropdownObj = Instantiate(Resources.Load("Dropdown"), transform, true) as GameObject;
             dropdownObj.SetObjectPos(-300, 275);
             dropdownObj.SetObjectSize(400, 60);
             dropdownObj.transform.Find("Label").GetComponentInChildren<Text>().fontSize = 32;
@@ -66,7 +64,7 @@ namespace ScriptMaker.Program.UI
 
             var dropdown = dropdownObj.GetComponent<Dropdown>();
             dropdown.AddOptions(contexts.Select(x => x.Value.DisplayName).ToList());
-            if(NS != -1)
+            if (NS != -1)
                 dropdown.value = dropdown.options.FindIndex(x =>
                     x.text == BlockHandler.handler.First(x => x.Key == BlockHandler.GetBlockContent(NS).Value).Value
                         .DisplayName);
